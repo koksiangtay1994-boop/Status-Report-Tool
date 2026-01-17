@@ -8,6 +8,7 @@ from models.report import Report, Task, TaskStatus
 from services.git_service import GitService, get_week_range
 from services.html_renderer import HtmlRenderer
 from services.task_file_service import TaskFileService
+from services.svg_renderer import SvgRenderer
 
 
 class ReportGenerator:
@@ -16,6 +17,7 @@ class ReportGenerator:
     def __init__(self, repo_path: Optional[str] = None, task_file: Optional[str] = None):
         self.git_service = GitService(repo_path)
         self.html_renderer = HtmlRenderer()
+        self.svg_renderer = SvgRenderer()
         self.task_file_service = TaskFileService(task_file)
 
     def generate(
@@ -98,3 +100,51 @@ class ReportGenerator:
         output_path.write_text(html_content, encoding="utf-8")
 
         return output_path
+
+    def save_svg_slides(
+        self,
+        report: Report,
+        output_dir: Optional[str] = None
+    ) -> list[Path]:
+        """Save report as multiple SVG slide files (one per task)."""
+        if output_dir is None:
+            output_dir = Path("output") / f"slides_{report.week_start.strftime('%Y%m%d')}"
+        else:
+            output_dir = Path(output_dir)
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Collect all tasks
+        all_tasks = []
+        all_tasks.extend(report.accomplished.tasks)
+        all_tasks.extend(report.in_progress.tasks)
+        all_tasks.extend(report.blockers.tasks)
+
+        total = len(all_tasks)
+        saved_files = []
+
+        # Save summary slide first
+        summary_svg = self.svg_renderer.render_summary(report)
+        summary_path = output_dir / "00_summary.svg"
+        summary_path.write_text(summary_svg, encoding="utf-8")
+        saved_files.append(summary_path)
+
+        # Save individual task slides
+        for i, task in enumerate(all_tasks, 1):
+            svg_content = self.svg_renderer.render_task(
+                task=task,
+                index=i,
+                total=total,
+                author=report.author,
+                week_string=report.week_string
+            )
+
+            # Create filename with topic
+            topic_slug = (task.topic or "general").lower().replace(" ", "_")[:20]
+            filename = f"{i:02d}_{topic_slug}.svg"
+            file_path = output_dir / filename
+
+            file_path.write_text(svg_content, encoding="utf-8")
+            saved_files.append(file_path)
+
+        return saved_files

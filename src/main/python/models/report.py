@@ -17,6 +17,7 @@ class TaskStatus(Enum):
 class Task:
     """Represents a single task or work item."""
     title: str
+    topic: Optional[str] = None
     description: Optional[str] = None
     status: TaskStatus = TaskStatus.COMPLETED
     commit_hash: Optional[str] = None
@@ -26,6 +27,7 @@ class Task:
     def to_dict(self) -> dict:
         return {
             "title": self.title,
+            "topic": self.topic,
             "description": self.description,
             "status": self.status.value,
             "commit_hash": self.commit_hash,

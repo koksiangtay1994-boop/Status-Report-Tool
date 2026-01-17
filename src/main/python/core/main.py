@@ -43,14 +43,14 @@ def prompt_for_items(section_name: str) -> list[str]:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Generate weekly status reports from Git history",
+        description="Generate weekly status reports from tasks.txt",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s                          Interactive mode - prompts for input
-  %(prog)s --no-interactive         Skip prompts, use Git data only
+  %(prog)s                          Generate HTML report (default)
+  %(prog)s --svg                    Generate SVG slides (chip floorplan style)
+  %(prog)s --no-interactive         Skip prompts, read from tasks.txt only
   %(prog)s -o my_report.html        Save to specific file
-  %(prog)s --repo /path/to/repo     Generate from different repository
         """
     )
 
@@ -61,12 +61,12 @@ Examples:
     )
     parser.add_argument(
         "-o", "--output",
-        help="Output file path (default: output/status_report_YYYYMMDD.html)",
+        help="Output path (file for HTML, directory for SVG)",
         default=None
     )
     parser.add_argument(
         "--author",
-        help="Filter commits by author (default: git config user.name)",
+        help="Author name (default: git config user.name)",
         default=None
     )
     parser.add_argument(
@@ -101,6 +101,11 @@ Examples:
         help="Skip interactive prompts"
     )
     parser.add_argument(
+        "--svg",
+        action="store_true",
+        help="Generate SVG slides instead of HTML (chip floorplan style)"
+    )
+    parser.add_argument(
         "--print",
         action="store_true",
         dest="print_html",
@@ -117,14 +122,13 @@ Examples:
         in_progress_items = args.in_progress or []
         blocker_items = args.blockers or []
 
-        # Interactive mode
-        if not args.no_interactive and not args.print_html:
+        # Interactive mode (only for non-SVG, non-print modes)
+        if not args.no_interactive and not args.print_html and not args.svg:
             print("\n" + "="*50)
             print("  WEEKLY STATUS REPORT GENERATOR")
             print("="*50)
 
-            # Show what will be auto-populated
-            print("\nGit commits will be automatically added to 'Accomplished'.")
+            print("\nTasks will be read from tasks.txt")
 
             # Prompt for In Progress
             in_progress_input = prompt_for_items("In Progress")
@@ -147,6 +151,23 @@ Examples:
         if args.print_html:
             html = generator.render_html(report)
             print(html)
+        elif args.svg:
+            # Generate SVG slides
+            saved_files = generator.save_svg_slides(report, args.output)
+
+            print(f"\n{'='*60}")
+            print("  SVG SLIDES GENERATED - CHIP FLOORPLAN STYLE")
+            print(f"{'='*60}")
+            print(f"\nOutput directory: {saved_files[0].parent.absolute()}")
+            print(f"\nGenerated {len(saved_files)} slides:")
+            for f in saved_files:
+                print(f"  - {f.name}")
+            print(f"\nWeekly Status Report - {report.week_string}")
+            print(f"Author: {report.author}")
+            print(f"\n  Accomplished:  {len(report.accomplished.tasks)} slides")
+            print(f"  In Progress:   {len(report.in_progress.tasks)} slides")
+            print(f"  Blockers:      {len(report.blockers.tasks)} slides")
+            print()
         else:
             output_path = generator.save_html(report, args.output)
 
@@ -168,6 +189,8 @@ Examples:
         return 1
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         return 1
 
 

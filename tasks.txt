@@ -1,20 +1,17 @@
 # Weekly Tasks File
-# Edit this file daily. The report generator will read it.
-# Format: One task per line. Use sections to organize.
+# Format: [Topic] Task description
+# Each task will become a separate SVG slide
 
 ## ACCOMPLISHED
-# Tasks you completed this week
-- 20260113 Mon: Set up project structure
-- 20260114 Tue: Completed Carneros FE Task
-- 20260115 Wed: Fixed login bug
-- 20260116 Thu: Reviewed PR #42
-- 20260117 Fri: Updated documentation
+- [Project Setup] Initialized Status Report Tool repository
+- [Frontend] Completed Carneros FE Task - UI components
+- [Bug Fix] Fixed login timeout issue on slow connections
+- [Code Review] Reviewed PR #42 - Database optimization
+- [Documentation] Updated API documentation for v2.0
 
 ## IN PROGRESS
-# Tasks you're currently working on
-- Implementing user authentication
-- Writing unit tests
+- [Authentication] Implementing OAuth2 user authentication
+- [Testing] Writing unit tests for core modules
 
 ## BLOCKERS
-# Issues blocking your progress
-- Waiting for API documentation
+- [Dependency] Waiting for API documentation from backend team
