@@ -21,7 +21,8 @@ class ReportGenerator:
         week_start: Optional[datetime] = None,
         week_end: Optional[datetime] = None,
         author: Optional[str] = None,
-        blockers: Optional[list[str]] = None
+        blockers: Optional[list[str]] = None,
+        in_progress: Optional[list[str]] = None
     ) -> Report:
         """Generate a weekly status report."""
         # Get week range
@@ -44,10 +45,13 @@ class ReportGenerator:
         for commit in commits:
             report.accomplished.add_task(commit)
 
-        # Get branches for in-progress section
-        branches = self.git_service.get_branches_in_progress()
-        for branch in branches:
-            report.in_progress.add_task(branch)
+        # Add manually specified in-progress items
+        if in_progress:
+            for item_text in in_progress:
+                report.in_progress.add_task(Task(
+                    title=item_text,
+                    status=TaskStatus.IN_PROGRESS
+                ))
 
         # Add manually specified blockers
         if blockers:
