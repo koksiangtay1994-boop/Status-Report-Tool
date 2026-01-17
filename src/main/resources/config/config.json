@@ -1,0 +1,24 @@
+{
+    "report": {
+        "output_directory": "output",
+        "filename_format": "status_report_{date}.html"
+    },
+    "git": {
+        "default_branch": "main",
+        "exclude_merge_commits": true
+    },
+    "sections": {
+        "accomplished": {
+            "name": "Accomplished",
+            "description": "Tasks completed this week"
+        },
+        "in_progress": {
+            "name": "In Progress",
+            "description": "Tasks currently being worked on"
+        },
+        "blockers": {
+            "name": "Blockers",
+            "description": "Issues blocking progress"
+        }
+    }
+}
