@@ -1,0 +1,20 @@
+# Weekly Tasks File
+# Edit this file daily. The report generator will read it.
+# Format: One task per line. Use sections to organize.
+
+## ACCOMPLISHED
+# Tasks you completed this week
+- 20260113 Mon: Set up project structure
+- 20260114 Tue: Completed Carneros FE Task
+- 20260115 Wed: Fixed login bug
+- 20260116 Thu: Reviewed PR #42
+- 20260117 Fri: Updated documentation
+
+## IN PROGRESS
+# Tasks you're currently working on
+- Implementing user authentication
+- Writing unit tests
+
+## BLOCKERS
+# Issues blocking your progress
+- Waiting for API documentation

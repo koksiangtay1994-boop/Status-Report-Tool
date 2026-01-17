@@ -7,14 +7,16 @@ from typing import Optional
 from models.report import Report, Task, TaskStatus
 from services.git_service import GitService, get_week_range
 from services.html_renderer import HtmlRenderer
+from services.task_file_service import TaskFileService
 
 
 class ReportGenerator:
-    """Generates weekly status reports from Git data."""
+    """Generates weekly status reports from task file or Git data."""
 
-    def __init__(self, repo_path: Optional[str] = None):
+    def __init__(self, repo_path: Optional[str] = None, task_file: Optional[str] = None):
         self.git_service = GitService(repo_path)
         self.html_renderer = HtmlRenderer()
+        self.task_file_service = TaskFileService(task_file)
 
     def generate(
         self,
@@ -22,7 +24,8 @@ class ReportGenerator:
         week_end: Optional[datetime] = None,
         author: Optional[str] = None,
         blockers: Optional[list[str]] = None,
-        in_progress: Optional[list[str]] = None
+        in_progress: Optional[list[str]] = None,
+        use_task_file: bool = True
     ) -> Report:
         """Generate a weekly status report."""
         # Get week range
@@ -40,12 +43,23 @@ class ReportGenerator:
             week_end=week_end
         )
 
-        # Get commits for accomplished section
-        commits = self.git_service.get_commits(week_start, week_end, author)
-        for commit in commits:
-            report.accomplished.add_task(commit)
+        # Try to read from task file first
+        if use_task_file and self.task_file_service.file_exists():
+            file_tasks = self.task_file_service.read_tasks()
 
-        # Add manually specified in-progress items
+            for task in file_tasks["accomplished"]:
+                report.accomplished.add_task(task)
+            for task in file_tasks["in_progress"]:
+                report.in_progress.add_task(task)
+            for task in file_tasks["blockers"]:
+                report.blockers.add_task(task)
+        else:
+            # Fallback to git commits for accomplished section
+            commits = self.git_service.get_commits(week_start, week_end, author)
+            for commit in commits:
+                report.accomplished.add_task(commit)
+
+        # Add manually specified in-progress items (from CLI)
         if in_progress:
             for item_text in in_progress:
                 report.in_progress.add_task(Task(
@@ -53,7 +67,7 @@ class ReportGenerator:
                     status=TaskStatus.IN_PROGRESS
                 ))
 
-        # Add manually specified blockers
+        # Add manually specified blockers (from CLI)
         if blockers:
             for blocker_text in blockers:
                 report.blockers.add_task(Task(
