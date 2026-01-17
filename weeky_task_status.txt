@@ -1,2 +1,5 @@
 Koksiang trial to update weekly status
 20260117 Sunday - Carneros FE Task
+20260117 - Completed Carneros FE Task
+20260117 - Fixed login bug
+20260117 - Reviewed PR #42
